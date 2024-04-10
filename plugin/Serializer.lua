@@ -8,8 +8,9 @@ local Serializer = {}
   ^: Parent up
   -: Sibling
 
-  [C;P;O;S] Properties
+  [C;S;P;O;S] Properties
     - C: XXXX: Color (BrickColor Index)
+    - S: X: Shape (Enum.PartType)
     - P: x,y,z: Position (Vector3)
     - O: x,y,z: Orientation (Vector3)
     - S: x,y,z: Size (Vector3)
@@ -22,10 +23,11 @@ function Serializer:EncodeModelNoDepth(model: Model): string
   local encoded = ""
 
   for obj in model:GetDescendants() do
-    if not obj:IsA("BasePart") then continue end
+    if not obj:IsA("Part") then continue end
 
     local properties = {
       tostring(obj.BrickColor.Number),
+      tostring(obj.Shape.Value),
       self:_tostringV3(obj.Position),
       self:_tostringV3(obj.Orientation),
       self:_tostringV3(obj.Size)
