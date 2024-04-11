@@ -25,11 +25,12 @@ function Serializer:EncodeModelNoDepth(model: Model): string
   for _, obj in model:GetDescendants() do
     if not obj:IsA("Part") then continue end
     local properties = {
-      tostring(obj.BrickColor.Number),
-      tostring(obj.Shape.Value),
-      self:_tostringV3(obj.Position),
-      self:_tostringV3(obj.Orientation),
-      self:_tostringV3(obj.Size)
+      `C{tostring(obj.BrickColor.Number)}`,
+      `S{tostring(obj.Shape.Value)}`,
+      -- `M{tostring(obj.Material.Value)}`,
+      `P{self:_tostringV3(obj.Position)}`,
+      `O{self:_tostringV3(obj.Orientation)}`,
+      `I{self:_tostringV3(obj.Size)}`
     }
 
     encoded = `{encoded}{table.concat(properties, ";")}&"`
@@ -43,7 +44,7 @@ function Serializer:DecodeModelNoDepth(data: string): Model
   baseModel.Parent = workspace
   baseModel.Name = "Generated Model"
 
-  -- data = string.gsub(data, "%a", "")
+  data = string.gsub(data, "%a", "")
   local parts = string.split(data, "&")
 
   for _, part in parts do
@@ -55,7 +56,7 @@ function Serializer:DecodeModelNoDepth(data: string): Model
     part.Parent = baseModel
 
     part.BrickColor = BrickColor.new(tonumber(properties[1]))
-    part.Shape = Serializer:_getEnum(tonumber(properties[2]))
+    part.Shape = Serializer:_getEnum(tonumber(properties[2]), Enum.PartType)
     part.Position = Serializer:_toV3string(properties[3])
     part.Orientation = Serializer:_toV3string(properties[4])
     part.Size = Serializer:_toV3string(properties[5])
@@ -78,8 +79,8 @@ function Serializer:_toV3string(str: string): Vector3
   return Vector3.new(values[1] or 0, values[2] or 0, values[3] or 0)
 end
 
-function Serializer:_getEnum(value: number): Enum.PartType
-  return Enum.PartType:GetEnumItems()[value + 1]
+function Serializer:_getEnum(value: number, enum: Enum): Enum
+  return enum:GetEnumItems()[value + 1]
 end
 
 

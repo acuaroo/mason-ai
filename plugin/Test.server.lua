@@ -5,5 +5,5 @@ local model = workspace:FindFirstChildOfClass("Model")
 local encoded = Serializer:EncodeModelNoDepth(model)
 local decoded = Serializer:DecodeModelNoDepth(encoded)
 
-print(`Encoded model: {encoded}`)
+print(`Encoded model: {string.len(encoded)}`)
 print(`Decoded model: {decoded}`)
