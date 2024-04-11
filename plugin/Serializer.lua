@@ -57,6 +57,7 @@ function Serializer:DecodeModelNoDepth(data: string): Model
 
     part.BrickColor = BrickColor.new(tonumber(properties[1]))
     part.Shape = Serializer:_getEnum(tonumber(properties[2]), Enum.PartType)
+    -- part.Material = Serializer:_getEnum(tonumber(properties[3]), Enum.Material)
     part.Position = Serializer:_toV3string(properties[3])
     part.Orientation = Serializer:_toV3string(properties[4])
     part.Size = Serializer:_toV3string(properties[5])
@@ -80,6 +81,8 @@ function Serializer:_toV3string(str: string): Vector3
 end
 
 function Serializer:_getEnum(value: number, enum: Enum): Enum
+  print(enum:GetEnumItems(), value)
+
   return enum:GetEnumItems()[value + 1]
 end
 
