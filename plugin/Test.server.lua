@@ -1,4 +1,5 @@
 local Serializer = require(script.Parent.Serializer)
+Serializer:Initialize()
 
 local model = workspace:FindFirstChildOfClass("Model")
 

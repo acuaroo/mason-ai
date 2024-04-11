@@ -19,6 +19,21 @@ local Serializer = {}
   M>P[...]-P[...]-P[...]-M>P[...]^P[...]>P[...]>P[...]^^P[...]
 ]]
 
+function Serializer:Initialize(): nil
+  Serializer._enumItems = {
+    [Enum.PartType] = {},
+    [Enum.Material] = {}
+  }
+
+  for _, item in Enum.PartType:GetEnumItems() do
+    Serializer._enumItems[Enum.PartType][item.Value] = item
+  end
+
+  for _, item in Enum.Material:GetEnumItems() do
+    Serializer._enumItems[Enum.Material][item.Value] = item
+  end
+end
+
 function Serializer:EncodeModelNoDepth(model: Model): string
   local encoded = ""
 
@@ -27,7 +42,7 @@ function Serializer:EncodeModelNoDepth(model: Model): string
     local properties = {
       `C{tostring(obj.BrickColor.Number)}`,
       `S{tostring(obj.Shape.Value)}`,
-      -- `M{tostring(obj.Material.Value)}`,
+      `M{tostring(obj.Material.Value)}`,
       `P{self:_tostringV3(obj.Position)}`,
       `O{self:_tostringV3(obj.Orientation)}`,
       `I{self:_tostringV3(obj.Size)}`
@@ -49,7 +64,7 @@ function Serializer:DecodeModelNoDepth(data: string): Model
 
   for _, part in parts do
     local properties = string.split(part, ";")
-    if #properties < 5 then continue end
+    if #properties < 6 then continue end
 
     local part = Instance.new("Part")
     part.Anchored = true
@@ -57,10 +72,10 @@ function Serializer:DecodeModelNoDepth(data: string): Model
 
     part.BrickColor = BrickColor.new(tonumber(properties[1]))
     part.Shape = Serializer:_getEnum(tonumber(properties[2]), Enum.PartType)
-    -- part.Material = Serializer:_getEnum(tonumber(properties[3]), Enum.Material)
-    part.Position = Serializer:_toV3string(properties[3])
-    part.Orientation = Serializer:_toV3string(properties[4])
-    part.Size = Serializer:_toV3string(properties[5])
+    part.Material = Serializer:_getEnum(tonumber(properties[3]), Enum.Material)
+    part.Position = Serializer:_toV3string(properties[4])
+    part.Orientation = Serializer:_toV3string(properties[5])
+    part.Size = Serializer:_toV3string(properties[6])
   end
 
   return baseModel
@@ -81,10 +96,7 @@ function Serializer:_toV3string(str: string): Vector3
 end
 
 function Serializer:_getEnum(value: number, enum: Enum): Enum
-  print(enum:GetEnumItems(), value)
-
-  return enum:GetEnumItems()[value + 1]
+  return Serializer._enumItems[enum][value]
 end
-
 
 return Serializer
