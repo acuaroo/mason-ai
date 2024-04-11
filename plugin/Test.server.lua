@@ -1,6 +1,6 @@
 local Serializer = require(script.Parent.Serializer)
 
-local model = workspace:WaitForChild("TestModel")
+local model = workspace:FindFirstChildOfClass("Model")
 
 local encoded = Serializer:EncodeModelNoDepth(model)
 local decoded = Serializer:DecodeModelNoDepth(encoded)

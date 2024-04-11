@@ -22,9 +22,8 @@ local Serializer = {}
 function Serializer:EncodeModelNoDepth(model: Model): string
   local encoded = ""
 
-  for obj in model:GetDescendants() do
+  for _, obj in model:GetDescendants() do
     if not obj:IsA("Part") then continue end
-
     local properties = {
       tostring(obj.BrickColor.Number),
       tostring(obj.Shape.Value),
@@ -33,10 +32,10 @@ function Serializer:EncodeModelNoDepth(model: Model): string
       self:_tostringV3(obj.Size)
     }
 
-    encoded += `{table.concat(properties, ";")}-"`
+    encoded = `{encoded}{table.concat(properties, ";")}&"`
   end
 
-  return encoded
+  return string.gsub(encoded, "\"", "")
 end
 
 function Serializer:DecodeModelNoDepth(data: string): Model
@@ -44,40 +43,43 @@ function Serializer:DecodeModelNoDepth(data: string): Model
   baseModel.Parent = workspace
   baseModel.Name = "Generated Model"
 
-  local parts = string.split(data, "-")
+  -- data = string.gsub(data, "%a", "")
+  local parts = string.split(data, "&")
 
-  for part in parts do
+  for _, part in parts do
     local properties = string.split(part, ";")
+    if #properties < 5 then continue end
+
     local part = Instance.new("Part")
+    part.Anchored = true
     part.Parent = baseModel
 
-    part.BrickColor = BrickColor.new(properties[1])
-    part.Position = Serializer:_toV3string(properties[2])
-    part.Orientation = Serializer:_toV3string(properties[3])
-    part.Size = Serializer:_toV3string(properties[4])
+    part.BrickColor = BrickColor.new(tonumber(properties[1]))
+    part.Shape = Serializer:_getEnum(tonumber(properties[2]))
+    part.Position = Serializer:_toV3string(properties[3])
+    part.Orientation = Serializer:_toV3string(properties[4])
+    part.Size = Serializer:_toV3string(properties[5])
   end
 
   return baseModel
 end
 
 function Serializer:_tostringV3(vector: Vector3): string
-  vector = Serializer:_roundVector(vector)
+  if vector.Magnitude == 0 then
+    return "_"
+  end
 
-  return `{vector.X},{vector.Y},{vector.Z}`
+  return `{string.format("%.2f", vector.X)},{string.format("%.2f", vector.Y)},{string.format("%.2f", vector.Z)}`
 end
 
 function Serializer:_toV3string(str: string): Vector3
   local values = string.split(str, ",")
 
-  return Vector3.new(values[1], values[2], values[3])
+  return Vector3.new(values[1] or 0, values[2] or 0, values[3] or 0)
 end
 
-function Serializer:_roundVector(vector: Vector3): Vector3
-  return Vector3.new(
-    math.floor(vector.X * 10) / 10,
-    math.floor(vector.Y * 10) / 10,
-    math.floor(vector.Z * 10) / 10
-  )
+function Serializer:_getEnum(value: number): Enum.PartType
+  return Enum.PartType:GetEnumItems()[value + 1]
 end
 
 
