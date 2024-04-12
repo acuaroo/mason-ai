@@ -28,12 +28,14 @@ local listFrame = VerticallyScalingListFrame.new("ListFrame")
 
 local dataCollapse = CollapsibleTitledSection.new("Collapse", "Data Collection", true, true, true)
 local portInput = LabeledTextInput.new("PortNumber", "Port #", "3232")
+portInput:SetMaxGraphemes(4)
 
 portInput:GetFrame().Parent = dataCollapse:GetContentsFrame()
 listFrame:AddChild(dataCollapse:GetSectionFrame())
 
 local serializeCollapse = CollapsibleTitledSection.new("Collapse", "Serialization", true, true, true)
 local serializedInput = LabeledTextInput.new("SerializedInput", "Serialized", "")
+serializedInput:SetMaxGraphemes(math.huge)
 
 serializedInput:GetFrame().Parent = serializeCollapse:GetContentsFrame()
 listFrame:AddChild(serializeCollapse:GetSectionFrame())
