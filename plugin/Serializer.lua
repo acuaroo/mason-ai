@@ -1,24 +1,5 @@
 local Serializer = {}
 
---[[
-  Serialization Depth Syntax:
-  M: Model
-  P: Part
-  >: Child down
-  ^: Parent up
-  -: Sibling
-
-  [C;S;P;O;S] Properties
-    - C: XXXX: Color (BrickColor Index)
-    - S: X: Shape (Enum.PartType)
-    - P: x,y,z: Position (Vector3)
-    - O: x,y,z: Orientation (Vector3)
-    - S: x,y,z: Size (Vector3)
-
-  Example:
-  M>P[...]-P[...]-P[...]-M>P[...]^P[...]>P[...]>P[...]^^P[...]
-]]
-
 function Serializer:Initialize(): nil
   Serializer._enumItems = {
     [Enum.PartType] = {},

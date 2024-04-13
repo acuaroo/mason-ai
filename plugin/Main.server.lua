@@ -1,6 +1,6 @@
-local HTTPService = game:GetService("HttpService")
 local Tests = require(script.Parent.Tests)
 local Serializer = require(script.Parent.Serializer)
+local DataCollection = require(script.Parent.DataCollection)
 
 local uilib = script.Parent.uilib
 local LabeledTextInput = require(uilib.LabeledTextInput)
@@ -48,35 +48,53 @@ listFrame:AddBottomPadding()
 listFrame:GetFrame().Parent = scrollFrame:GetContentsFrame()
 scrollFrame:GetSectionFrame().Parent = widget
 
-local function postData(data)
-  local URL = `http://localhost:{portInput:GetValue()}`
-
-  local success, result = pcall(function()
-    return HTTPService:PostAsync(`{URL}/data/`, HTTPService:JSONEncode(data), Enum.HttpContentType.ApplicationJson)
-  end)
-
-  if success then
-    print(`Successfully posted data: {result}`)
-  else
-    warn(`Failed to upload data: {result}`)
-  end
-end
-
 button.Click:Connect(function()
   widget.Enabled = not widget.Enabled
 end)
+
+local url
 
 serverCheckbox:SetValueChangedFunction(function(newValue)
 	dataCheckbox:SetDisabled(not newValue)
   dataCheckbox:SetValue(false)
 
-  if not newValue then return end
+  if not newValue then
+    print("[MASON]: Disconnected from server")
+  else
+    local port = portInput:GetValue()
 
-  local testData = {
-    name = "Test",
-    description = "This is a test",
-    serialization = Serializer:EncodeModelNoDepth(workspace["Pine Tree"])
-  }
+    if not port then
+      warn("Invalid port number!")
+      serverCheckbox:SetValue(false)
+      dataCheckbox:SetValue(false)
+      dataCheckbox:SetDisabled(true)
+      return
+    end
 
-  postData(testData)
+    url = `http://localhost:{port}`
+    local success, result = DataCollection:Post(`{url}/test`, {})
+    
+    if success then
+      print(`[MASON]: Connected on {url}!`)
+    else
+      warn(`[MASON]: Failed to connect to server: {result}`)
+      serverCheckbox:SetValue(false)
+      dataCheckbox:SetValue(false)
+      dataCheckbox:SetDisabled(true)
+    end
+  end
+end)
+
+local previous = false
+
+dataCheckbox:SetValueChangedFunction(function(newValue)
+  if previous == newValue then return end
+
+  if newValue then
+    print("[MASON]: Starting data collection...")
+    DataCollection:Scrape(url)
+  else
+    print("[MASON]: Stopping data collection...")
+    DataCollection:StopScraping()
+  end
 end)
