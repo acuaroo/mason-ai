@@ -1,5 +1,4 @@
 local HTTPService = game:GetService("HttpService")
-local InsertService = game:GetService("InsertService")
 local Tests = require(script.Parent.Tests)
 local Serializer = require(script.Parent.Serializer)
 
@@ -28,11 +27,10 @@ local listFrame = VerticallyScalingListFrame.new("ListFrame")
 
 local dataCollapse = CollapsibleTitledSection.new("Collapse", "Data Collection", true, true, true)
 local portInput = LabeledTextInput.new("PortNumber", "Port #", "3232")
-local serverCheckbox = LabeledCheckbox.new("ServerCheckbox", "Server connection", false, false)
+local serverCheckbox = LabeledCheckbox.new("ServerCheckbox", "Connection", false, false)
 local dataCheckbox = LabeledCheckbox.new("DataCheckbox", "Stream data", false, true)
 
--- dataCheckbox:DisableWithOverrideValue(false)
-portInput:SetMaxGraphemes(4)
+portInput:SetMaxGraphemes(5)
 
 local serializeCollapse = CollapsibleTitledSection.new("Collapse", "Serialization", true, true, true)
 local serializedInput = LabeledTextInput.new("SerializedInput", "Serialized", "")
@@ -51,10 +49,10 @@ listFrame:GetFrame().Parent = scrollFrame:GetContentsFrame()
 scrollFrame:GetSectionFrame().Parent = widget
 
 local function postData(data)
-  local URL = `http://localhost:{portInput:GetText()}/`
+  local URL = `http://localhost:{portInput:GetValue()}`
 
   local success, result = pcall(function()
-    return HTTPService:PostAsync(`{URL}/data/`, HTTPService:JSONEncode(data))
+    return HTTPService:PostAsync(`{URL}/data/`, HTTPService:JSONEncode(data), Enum.HttpContentType.ApplicationJson)
   end)
 
   if success then
@@ -64,52 +62,21 @@ local function postData(data)
   end
 end
 
-local function validateModel(model)
-  local descendants = model:GetDescendants()
-  if #desc > 1000 then return false end
-  
-  local population = {}
-
-  for _, obj in descendants do
-    population[obj.ClassName] = (population[obj.ClassName] or 0) + 1
-  end
-
-  if (population["MeshPart"] or 0) / #descendants > 0.35 then
-    return false
-  end
-
-  return true
-end
-
-local function scrapeToolbox()
-  local assetId = math.random(1000, 100000)
-  local success, model = pcall(InsertService.LoadAsset, InsertService, assetId)
-
-  if success and model then
-    model.Parent = workspace
-
-    local isValid = validateModel(model)
-
-    if not isValid then
-      model:Destroy()
-      return
-    end
-
-    local serialized = Serializer:EncodeModelNoDepth(model)
-    postData({name = "test", description = "test", serialization = serialized})
-
-    return true
-  else
-    print("Model failed to load! Skipping ...")
-    return false
-  end
-end
-
 button.Click:Connect(function()
   widget.Enabled = not widget.Enabled
 end)
 
 serverCheckbox:SetValueChangedFunction(function(newValue)
-	dataCheckbox:SetDisabled(newValue)
+	dataCheckbox:SetDisabled(not newValue)
   dataCheckbox:SetValue(false)
+
+  if not newValue then return end
+
+  local testData = {
+    name = "Test",
+    description = "This is a test",
+    serialization = Serializer:EncodeModelNoDepth(workspace["Pine Tree"])
+  }
+
+  postData(testData)
 end)
