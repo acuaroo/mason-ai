@@ -22,8 +22,8 @@ function Serializer:EncodeModelNoDepth(model: Model): string
     if not obj:IsA("Part") then continue end
     local properties = {
       `C{tostring(obj.BrickColor.Number)}`,
-      `S{tostring(obj.Shape.Value)}`,
-      `M{tostring(obj.Material.Value)}`,
+      -- `S{tostring(obj.Shape.Value)}`,
+      -- `M{tostring(obj.Material.Value)}`,
       `P{self:_tostringV3(obj.Position)}`,
       `O{self:_tostringV3(obj.Orientation)}`,
       `I{self:_tostringV3(obj.Size)}`
@@ -45,18 +45,18 @@ function Serializer:DecodeModelNoDepth(data: string): Model
 
   for _, part in parts do
     local properties = string.split(part, ";")
-    if #properties < 6 then continue end
+    if #properties < 4 then continue end
 
     local part = Instance.new("Part")
     part.Anchored = true
     part.Parent = baseModel
 
     part.BrickColor = BrickColor.new(tonumber(properties[1]))
-    part.Shape = Serializer:_getEnum(tonumber(properties[2]), Enum.PartType)
-    part.Material = Serializer:_getEnum(tonumber(properties[3]), Enum.Material)
-    part.Position = Serializer:_toV3string(properties[4])
-    part.Orientation = Serializer:_toV3string(properties[5])
-    part.Size = Serializer:_toV3string(properties[6])
+    -- part.Shape = Serializer:_getEnum(tonumber(properties[2]), Enum.PartType)
+    -- part.Material = Serializer:_getEnum(tonumber(properties[3]), Enum.Material)
+    part.Position = Serializer:_toV3string(properties[2])
+    part.Orientation = Serializer:_toV3string(properties[3])
+    part.Size = Serializer:_toV3string(properties[4])
   end
 
   return baseModel

@@ -11,8 +11,7 @@ import os
 load_dotenv()
 
 PORT = os.environ.get("PORT")
-COOKIE = os.environ.get("COOKIE")
-XCSRF = os.environ.get("XCSRF")
+KEY = os.getenv("KEY")
 
 app = Flask(__name__)
 
@@ -34,9 +33,6 @@ def test():
 @app.route("/proxy", methods=["GET"])
 def proxy():
   url = request.args.get("url")
-
-  print(url)
-
   response = requests.get(url)
 
   return response.json()
@@ -44,22 +40,17 @@ def proxy():
 @app.route("/model/", methods=["POST"])
 def model():
   received_data = request.json
+  product = received_data["id"]
+  base_url =f"https://apis.roblox.com/cloud/v2/creator-store-products/{product}"
 
   headers = {
-    "Referer": "https://create.roblox.com/",
-    "Content-Type": "application/json-patch+json",
-    "x-csrf-token": "/" + XCSRF,
-    "Origin": "https://create.roblox.com",
-    "Cookie": COOKIE,
+    "x-api-key": KEY,
   }
 
-  payload = {
-    "assetId": received_data["id"],
-    "assetType": 10,
-    "expectedPrice": 0,
-  }
+  response = requests.get(base_url, headers=headers)
 
-  response = requests.post(f"https://apis.roblox.com/creator-marketplace-purchasing-service/v1/products/{received_data["id"]}/purchase", headers=headers, json=payload)
+  print(base_url)
+  print(response.json())
 
   return response.json()
 app.run(port=PORT, debug=True)

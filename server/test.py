@@ -1,10 +1,18 @@
-# send a POST request to localhost://3232/data with the following JSON payload:
 import requests
+import dotenv
+import os
 
-payload = {
-  "name": "test",
-  "description": "test2",
-  "serialization" : "test3",
+dotenv.load_dotenv()
+KEY = os.getenv("KEY")
+
+product = 47433
+base_url =f"https://apis.roblox.com/cloud/v2/creator-store-products/{product}"
+
+headers = {
+  "x-api-key": KEY,
 }
 
-print(requests.post("http://localhost:3232/data", json=payload))
+response = requests.get(base_url, headers=headers)
+
+print(base_url)
+print(response.json())
