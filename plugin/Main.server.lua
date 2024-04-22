@@ -97,4 +97,6 @@ dataCheckbox:SetValueChangedFunction(function(newValue)
     print("[MASON]: Stopping data collection...")
     DataCollection:StopScraping()
   end
+
+  previous = newValue
 end)

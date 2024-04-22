@@ -10,8 +10,8 @@ import os
 
 load_dotenv()
 
-PORT = os.environ.get("PORT")
-KEY = os.getenv("KEY")
+PORT = os.getenv("PORT")
+COOKIE = os.getenv("COOKIE")
 
 app = Flask(__name__)
 
@@ -30,27 +30,49 @@ def data():
 def test():
   return jsonify({"status": "success"})
 
-@app.route("/proxy", methods=["GET"])
-def proxy():
-  url = request.args.get("url")
+@app.route("/productid", methods=["POST"])
+def productid():
+  received_data = request.json
+
+  url = f"https://apis.roblox.com/toolbox-service/v1/items/details?assetIds={received_data["asset_id"]}"
   response = requests.get(url)
 
-  return response.json()
+  print(response, response.text)
+  return response.text
 
-@app.route("/model/", methods=["POST"])
-def model():
+@app.route("/model", methods=["POST"])
+def model():  
   received_data = request.json
-  product = received_data["id"]
-  base_url =f"https://apis.roblox.com/cloud/v2/creator-store-products/{product}"
+
+  xcsrf_response = requests.post("https://auth.roblox.com/v2/logout", cookies={".ROBLOSECURITY": COOKIE})
+  xcsrf = xcsrf_response.headers["x-csrf-token"]
+
+  url = f"https://apis.roblox.com/creator-marketplace-purchasing-service/v1/products/{received_data["product_id"]}/purchase"
+  cookies = {".ROBLOSECURITY": COOKIE}
 
   headers = {
-    "x-api-key": KEY,
+    "Host": "apis.roblox.com",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0",
+    "Accept": "*/*",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Referer": "https://create.roblox.com/",
+    "Content-Type": "application/json-patch+json",
+    "x-csrf-token": xcsrf,
+    "Origin": "https://create.roblox.com",
+    "DNT": "1",
+    "Sec-GPC": "1",
+    "Connection": "keep-alive",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-site",
+    "TE": "trailers"
   }
 
-  response = requests.get(base_url, headers=headers)
+  payload = {"assetId": received_data["asset_id"], "assetType": 10, "expectedPrice": 0}
+  response = requests.post(url, cookies=cookies, headers=headers, json=payload)
 
-  print(base_url)
-  print(response.json())
+  print(response, response.text)
+  return response.text
 
-  return response.json()
 app.run(port=PORT, debug=True)

@@ -22,26 +22,50 @@ function DataCollection:Get(url)
 end
 
 function DataCollection:Scrape(url)
+  DataCollection.Active = true
+  
   task.spawn(function()
     while DataCollection.Active do
-      task.wait(1)
-      local id = math.random(1000000, 9999999)
-      local success, result = self:Get(`{url}/proxy?url=https://apis.roblox.com/toolbox-service/v1/items/details?assetIds={id}`)
+      print("[MASON]: Scanning for models...")
+      task.wait(0.5)
 
-      if not success then
-        warn(`[MASON]: Failed to scrape asset {id}: {result}`)
-        return
-      end
+      local asset_id = math.random(100000, 9000000)
+      local success, result = self:Post(`{url}/productid`, {["asset_id"] = asset_id})
+      if not success then continue end
 
-      local success, result = self:Post(`{url}/model`, {["id"] = id})
+      local decoded = HTTPService:JSONDecode(result)
+      if not decoded["data"] then continue end
 
-      if not success then
-        warn(`[MASON]: Failed to obtain asset {id}: {result}`)
-        return
-      end
+      local asset = decoded["data"][1]
+
+      local product_id = asset["product"]["productId"]
+      local name = asset["asset"]["name"]
+      local description = asset["asset"]["description"]
+
+      local success, result = self:Post(`{url}/model`, {["asset_id"] = asset_id, ["product_id"] = product_id})
+      if not success then continue end
       
-      InsertService:LoadAsset(id)
-      print(`Loaded asset {id}!`)
+      local success, result = pcall(function()
+        InsertService:LoadAsset(asset_id).Parent = workspace
+      end)
+
+      if not success then continue end
+
+      print(`[MASON]: Model found! {name}, {description}, {asset_id}`)
+      
+      local model = workspace:WaitForChild("Model")
+      local isValid = DataCollection:ValidateModel(model)
+
+      if not isValid then 
+        print("[MASON]: Model was invalid!")
+        model:Destroy()
+        continue 
+      end
+
+      local serialized = Serializer:EncodeModelNoDepth(model)
+      self:Post(`{url}/data`, {["name"] = name, ["description"] = description, ["serialized"] = serialized})
+
+      model:Destroy()
     end
   end)
 end
