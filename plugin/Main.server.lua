@@ -100,3 +100,9 @@ dataCheckbox:SetValueChangedFunction(function(newValue)
 
   previous = newValue
 end)
+
+serializedInput:SetValueChangedFunction(function(newValue)
+  if newValue == "" then return end
+  
+	Serializer:DecodeModelNoDepth(newValue)
+end)

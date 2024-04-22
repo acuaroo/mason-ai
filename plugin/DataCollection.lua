@@ -33,8 +33,13 @@ function DataCollection:Scrape(url)
       local success, result = self:Post(`{url}/productid`, {["asset_id"] = asset_id})
       if not success then continue end
 
-      local decoded = HTTPService:JSONDecode(result)
-      if not decoded["data"] then continue end
+      local decoded = nil
+
+      pcall(function()
+        decoded = HTTPService:JSONDecode(result)
+      end)
+
+      if not decoded or not decoded["data"] then continue end
 
       local asset = decoded["data"][1]
 
@@ -45,6 +50,8 @@ function DataCollection:Scrape(url)
       local success, result = self:Post(`{url}/model`, {["asset_id"] = asset_id, ["product_id"] = product_id})
       if not success then continue end
       
+      task.wait(1)
+
       local success, result = pcall(function()
         InsertService:LoadAsset(asset_id).Parent = workspace
       end)
@@ -62,6 +69,7 @@ function DataCollection:Scrape(url)
         continue 
       end
 
+      model:PivotTo(Vector3.new(0, 0, 0))
       local serialized = Serializer:EncodeModelNoDepth(model)
       self:Post(`{url}/data`, {["name"] = name, ["description"] = description, ["serialized"] = serialized})
 
@@ -77,6 +85,7 @@ end
 function DataCollection:ValidateModel(model)
   local descendants = model:GetDescendants()
   if #descendants > 1000 then return false end
+  if #descendants < 2 then return false end
   
   local population = {}
 

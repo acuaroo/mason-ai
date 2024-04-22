@@ -22,6 +22,7 @@ def data():
   received_data = request.json
 
   df = pd.DataFrame(received_data, index=[0])
+  df = df.replace({"\n": " "}, regex=True)
   df.to_csv(f"../data/{session_id}.csv", mode="a", header=False, index=False)
 
   return jsonify({"status": "success"})
