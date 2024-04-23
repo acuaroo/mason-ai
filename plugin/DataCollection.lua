@@ -69,7 +69,7 @@ function DataCollection:Scrape(url)
         continue 
       end
 
-      model:PivotTo(Vector3.new(0, 0, 0))
+      model:PivotTo(CFrame.new(0, 0, 0))
       local serialized = Serializer:EncodeModelNoDepth(model)
       self:Post(`{url}/data`, {["name"] = name, ["description"] = description, ["serialized"] = serialized})
 
