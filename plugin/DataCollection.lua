@@ -29,7 +29,7 @@ function DataCollection:Scrape(url)
       print("[MASON]: Scanning for models...")
       task.wait(0.5)
 
-      local asset_id = math.random(100000, 9000000)
+      local asset_id = math.random(500000, 12000000)
       local success, result = self:Post(`{url}/productid`, {["asset_id"] = asset_id})
       if not success then continue end
 
@@ -56,6 +56,8 @@ function DataCollection:Scrape(url)
       local success, result = pcall(function()
         InsertService:LoadAsset(asset_id).Parent = workspace
       end)
+
+      print(`[MASON]: Attempting to load asset {asset_id}...`)
 
       if not success then continue end
 
