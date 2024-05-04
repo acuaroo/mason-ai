@@ -5,8 +5,8 @@
 /*.rbxlx.lock
 /*.rbxl.lock
 
+
 data/*.csv
-
+modeling/mason-ai
 /.vscode
-
 /server/.env

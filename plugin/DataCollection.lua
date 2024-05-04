@@ -43,7 +43,8 @@ function DataCollection:Scrape(url)
 
       local asset = decoded["data"][1]
       if not asset then continue end
-
+      if not asset["product"] then continue end
+      
       local product_id = asset["product"]["productId"]
       local name = asset["asset"]["name"]
       local description = asset["asset"]["description"]
